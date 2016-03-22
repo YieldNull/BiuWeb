@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>比鼬-文件多终端快传</title>
+    <meta name="keywords" content="比鼬，文件快传">
+    <meta name="description" content="比鼬-文件多终端快传">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="shortcut icon" href="{{ url_for('static',filename='img/icon.png') }}">
+
+    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-1.11.0.min.js') }}"></script>
+
+    <style type="text/css">
+        body {
+            background-image: url({{url_for('static',filename='img/bg.jpg')}});
+            background-position: center 0;
+            background-repeat: no-repeat;
+        }
+
+        .login_box {
+            width: 350px;
+            height: 400px;
+            margin: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            filter: alpha(opacity=50);
+            -moz-opacity: 0.5;
+            opacity: 0.5;
+        }
+
+        #QrCodeImg {
+            display: block;
+            position: relative;
+            margin: auto;
+        }
+    </style>
+
+</head>
+
+<body>
+<div class="emptyBox">
+
+</div>
+<div class="login_box" style="background:#FFF">
+    <img id="QrCodeImg" style="max-width: 320px;max-height: 320px;margin-top: 20px" src="{{ url_for('gen_qrcode') }}">
+    <p class="sub_title" style="text-align:center">请扫描二维码传输文件</p>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $.getScript("{{ url_for('login') }}");
+    })
+</script>
+</body>
+</html>
