@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from peewee import IntegerField, CharField, ForeignKeyField, BooleanField
+from peewee import IntegerField, CharField, ForeignKeyField, BooleanField, DateTimeField
 
 from app import db
 
@@ -15,4 +15,5 @@ class File(db.Model):
     uid = ForeignKeyField(User)
     name = CharField()
     used = BooleanField(default=False)
-    hash = CharField()  # uid+name hash
+    hashcode = CharField()  # uid+name+time hash
+    timestamp = DateTimeField()

@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import datetime
 import functools
 import hashlib
 import json
 import os
 import io
 from time import sleep
-from urllib.parse import quote
 
 import qrcode
 import uuid
 
-from flask import request, render_template, make_response, session, send_file, url_for
+from flask import request, render_template, make_response, session, url_for, redirect
 
 from app import *
 from models import *
@@ -29,6 +28,9 @@ AJAX_RETRY = '$.getScript("/login");'
 AJAX_UPLOAD = 'window.location = "/upload";'
 AJAX_DOWNLOAD = 'window.location = "/download";'
 
+POLLING_INTERVAL = 0.5
+RETRY_THRESHOLD = 100
+
 
 def session_required(fn):
     """
@@ -42,6 +44,32 @@ def session_required(fn):
         if session.get('uid'):
             return fn(*args, **kwargs)
         return STATUS_403
+
+    return inner
+
+
+def login_required(fn):
+    """
+    浏览器客户端需要启用Cookie，并且`uid`必须存在于session中
+    :param fn:
+    :return:
+    """
+
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        uid = session.get('uid')
+        if uid is None:
+            return STATUS_403
+
+        query = User.select().where(User.uid == uid)
+        if query.count() == 0:
+            return redirect(url_for('index'))
+
+        user = query[0]
+        if user.state == STATE_OFFLINE:
+            return redirect(url_for('index'))
+
+        return fn(*args, **kwargs)
 
     return inner
 
@@ -73,6 +101,7 @@ def gen_qrcode():
     二维码
     :return:
     """
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -133,10 +162,9 @@ def login():
         response.headers['content-type'] = 'text/javascript'
         return response
 
-    interval = 0.5  # 等待时间间隔
     wait_count = 0  # 检查次数
     while True:
-        if wait_count == 20:
+        if wait_count == RETRY_THRESHOLD:
             return text_as_js(AJAX_RETRY)
 
         query = User.select().where(User.uid == session['uid'])
@@ -146,7 +174,7 @@ def login():
             user = query[0]
             if user.state == STATE_OFFLINE:
                 wait_count += 1
-                sleep(interval)
+                sleep(POLLING_INTERVAL)
             elif user.state == STATE_UPLOAD:
                 return text_as_js(AJAX_UPLOAD)
             else:
@@ -154,7 +182,7 @@ def login():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-@session_required
+@login_required
 def upload():
     """
     浏览器上传文件
@@ -167,13 +195,13 @@ def upload():
 
         uid = session['uid']
         store_files(uid, files)
-        return '200'  # TODO 界面，或者用AJAX上传
+        return redirect(url_for('upload'))  # TODO 界面，或者用AJAX上传
     else:
         return render_template('upload.html')
 
 
 @app.route('/download')
-@session_required
+@login_required
 def download():
     """
     浏览器下载文件页面。
@@ -182,8 +210,8 @@ def download():
     return render_template('download.html')
 
 
-@app.route('/file/<hashcode>')
-@session_required
+@app.route('/download/<hashcode>')
+@login_required
 def file(hashcode):
     """
     下载指定文件，根据uid以及文件的hashcode返回对应的文件
@@ -193,21 +221,20 @@ def file(hashcode):
     return down_file(session['uid'], hashcode)
 
 
-@app.route('/list')
-@session_required
+@app.route('/filelist')
+@login_required
 def file_list():
     uid = session['uid']
-    interval = 0.5
     retry_count = 0
 
     while True:
-        if retry_count == 20:
+        if retry_count == RETRY_THRESHOLD:
             return json.dumps([])
 
         files_json = get_file_list(uid)
         if len(json.loads(files_json)) == 0:
             retry_count += 1
-            sleep(interval)
+            sleep(POLLING_INTERVAL)
         else:
             return files_json
 
@@ -230,8 +257,6 @@ def bind():
     # 网页端与Android端相反
     state = STATE_UPLOAD if what == 'download' else STATE_DOWNLOAD
 
-    File.update(used=True).where(File.uid == uid).execute()
-
     query = User.update(state=state).where(User.uid == uid)
     if query.execute() == 0:
         return STATUS_403  # uid 不合法
@@ -239,7 +264,7 @@ def bind():
         return '200'
 
 
-@app.route('/client/upload', methods=['POST'])
+@app.route('/api/upload', methods=['POST'])
 @uid_required('POST')
 def android_upload():
     """
@@ -255,7 +280,7 @@ def android_upload():
     return '200'
 
 
-@app.route('/client/file/<hashcode>')
+@app.route('/api/download/<hashcode>')
 @uid_required('GET')
 def android_file(hashcode):
     """
@@ -267,7 +292,7 @@ def android_file(hashcode):
     return down_file(uid, hashcode)
 
 
-@app.route('/client/list')
+@app.route('/api/filelist')
 @uid_required('GET')
 def android_file_list():
     """
@@ -275,17 +300,16 @@ def android_file_list():
     :return:
     """
     uid = request.args.get('uid')
-    interval = 0.5
     retry_count = 0
 
     while True:
-        if retry_count == 20:
+        if retry_count == RETRY_THRESHOLD:
             return json.dumps([])
 
         files_json = get_file_list(uid, android=True)
         if len(json.loads(files_json)) == 0:
             retry_count += 1
-            sleep(interval)
+            sleep(POLLING_INTERVAL)
         else:
             return files_json
 
@@ -323,9 +347,15 @@ def get_file_list(uid, android=False):
 
     file_list = []
     for file in query:
-        url = url_for('file', hashcode=file.hash) if not android else url_for('android_file', hashcode=file.hash)
-        file_list.append(
-            {'name': file.name, 'url': url, 'size': get_file_size(uid, file.name)})
+        url = url_for('file', hashcode=file.hashcode) if not android else url_for('android_file',
+                                                                                  hashcode=file.hashcode)
+        file_list.append({
+            'uid': file.uid.uid,  # 你大爷的，没叫你自动关联啊
+            'name': file.name,
+            'url': url,
+            'size': get_file_size(uid, file.name)})
+
+        File.update(used=True).where(File.uid == uid, File.hashcode == file.hashcode).execute()  # 更改状态
 
     return json.dumps(file_list)
 
@@ -337,14 +367,15 @@ def store_files(uid, files):
     :param files:
     :return:
     """
-    File.update(used=True).where(File.used == False).execute()  # 更改状态
-
     for file in files:
         file.save(get_file_path(uid, file.filename))
 
         sha1 = hashlib.sha1()
-        sha1.update((uid + file.filename).encode('utf-8'))
-        File.create(uid=uid, name=file.filename, hash=sha1.hexdigest(), used=False)
+        sha1.update((uid + file.filename + str(datetime.datetime.now())).encode('utf-8'))
+
+        File.create(uid=uid, name=file.filename,
+                    hashcode=sha1.hexdigest(), used=False,
+                    timestamp=datetime.datetime.now())
 
 
 def down_file(uid, hashcode):
@@ -354,22 +385,9 @@ def down_file(uid, hashcode):
     :param hashcode:
     :return:
     """
-    query = File.select().where(File.uid == uid, File.hash == hashcode)
+    query = File.select().where(File.uid == uid, File.hashcode == hashcode)
     if len(query) == 0:
         return STATUS_403
 
     name = query[0].name
-    file_path = get_file_path(uid, name)
-
-    # F*ck 遇到坑了，直接send_file as attachment时，使用Unicode字符会出现编码问题，进而返回为空
-    # see https://github.com/mitsuhiko/flask/issues/1286
-    response = make_response(send_file(file_path))
-    response.headers["Content-Disposition"] = \
-        "attachment; " \
-        "filenane={ascii_filename};" \
-        "filename*=UTF-8''{utf_filename}".format(
-            ascii_filename="book.pdf",
-            utf_filename=quote(name)
-        )
-
-    return response
+    return redirect('/files/{:s}/{:s}'.format(uid, name))  # 交给 nginx处理

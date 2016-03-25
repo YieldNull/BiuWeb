@@ -9,10 +9,10 @@ import requests
 import io
 
 uid = 'e61f2266-eff9-11e5-8264-74867a3853c6'
-host = 'http://127.0.0.1:5000/'
+host = 'http://192.168.1.102/'
 url_bind = host + 'bind'
-url_upload = host + 'client/upload'
-url_file_list = host + 'client/list'
+url_upload = host + 'api/upload'
+url_file_list = host + 'api/filelist'
 
 
 def bind(what):
@@ -41,7 +41,7 @@ def download():
     print(files)
 
     for file in files:
-        res = requests.get('http://127.0.0.1:5000' + file['url'], params={'uid': uid})
+        res = requests.get('http://192.168.1.102' + file['url'], params={'uid': uid})
 
         output = io.FileIO('/home/finalize/Desktop/download/' + file['name'], 'w')
         output.write(res.content)
