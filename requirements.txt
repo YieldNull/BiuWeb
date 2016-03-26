@@ -1,5 +1,6 @@
 flask
 qrcode
+Pillow
 peewee
 requests
 PyMySQL

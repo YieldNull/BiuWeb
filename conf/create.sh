@@ -30,6 +30,8 @@ nginx_conf="server {
     access_log $directory/log/access_log;
     error_log  $directory/log/error_log;
 
+    client_max_body_size 0;
+
     server_name $3;
 
     location ~ ^\/static\/.*$ {
@@ -55,23 +57,23 @@ sudo ln -s $nginx_file /etc/nginx/sites-enabled/$project
 
 # gunicorn
 gunicorn_conf="
-    bind = '127.0.0.1:$port'
-    workers = 4
-    worker_class = 'gevent'
-    timeout = 60
-    keep_alive = 75
+bind = '127.0.0.1:$port'
+workers = 4
+worker_class = 'gevent'
+timeout = 60
+keep_alive = 75
 "
 gunicorn_file="$directory/gunicorn.py"
 
 echo "$gunicorn_conf" | sudo tee $gunicorn_file
 
-# supervisor 
+# supervisor
 supervisor_file="/etc/supervisor/conf.d/$project.conf"
 supervisor_conf="
 [program:$project]
 command         = $directory/venv/bin/gunicorn -c $directory/gunicorn.py wsgi:app
 directory       = $directory/app
-user            = git
+user            = $USER
 startsecs       = 3
 
 redirect_stderr         = true
@@ -87,12 +89,12 @@ sudo chmod -R 777 $directory/venv
 source $directory/venv/bin/activate
 pip3 install gunicorn gevent
 deactivate
-sudo chmod -R 755 $directory/venv 
-sudo chown -R www-data:www-data $directory
+sudo chmod -R 755 $directory/venv
+sudo chown -R $USER:$USER $directory
 sudo chown -R git:git $directory/app
 sudo chown -R git:git $directory/venv
 
-# git 
+# git
 git_dir="/srv/git/$project.git"
 hook_file="$git_dir/hooks/post-receive"
 hook_shell="#!/bin/bash
@@ -110,7 +112,7 @@ fi
 
 sudo mkdir -p /srv/git
 sudo git init --bare $git_dir
-echo "$hook_shell" | sudo tee $hook_file 
+echo "$hook_shell" | sudo tee $hook_file
 
 sudo chmod 755 $hook_file
 sudo chown -R git:git $git_dir
