@@ -2,3 +2,4 @@ flask
 qrcode
 peewee
 requests
+PyMySQL
