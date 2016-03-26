@@ -355,6 +355,7 @@ def get_file_list(uid, android=False):
             'url': url,
             'size': get_file_size(uid, file.name)})
 
+        # TODO 这里有一个问题啊，当用户在浏览器下载文件后，又刷新页面，结果就给刷没了。。。。
         File.update(used=True).where(File.uid == uid, File.hashcode == file.hashcode).execute()  # 更改状态
 
     return json.dumps(file_list)
@@ -390,4 +391,7 @@ def down_file(uid, hashcode):
         return STATUS_403
 
     name = query[0].name
+
+    File.update(used=True).where(File.uid == uid, File.hashcode == hashcode).execute()
+
     return redirect('/files/{:s}/{:s}'.format(uid, name))  # 交给 nginx处理
