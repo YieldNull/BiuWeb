@@ -7,10 +7,8 @@ import getpass
 
 if getpass.getuser() == 'finalize':  # local  environment
     UPLOAD_FOLDER = '/home/finalize/Workspace/pycharm/biu/files'
-    DEBUG = True
 else:
     UPLOAD_FOLDER = '/srv/www/biu/files'  # in remote server
-    DEBUG = False
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'rar', 'rmvb'}
 SECRET_KEY = '6+WyIHq+lAFE8FzT4kGYl3xM+Qia1+yYy3K0wRfMblE='
@@ -29,6 +27,6 @@ DATABASE = {
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app.debug = DEBUG
+app.debug = True
 
 db = FlaskDB(app)

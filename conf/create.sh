@@ -25,14 +25,19 @@ sudo mkdir -p $directory/files
 nginx_file="/etc/nginx/sites-available/$project"
 nginx_conf="server {
     listen      80;
+    server_name $3;
 
     root  $directory/app;
     access_log $directory/log/access_log;
     error_log  $directory/log/error_log;
 
-    client_max_body_size 0;
 
-    server_name $3;
+    gzip on;
+    keepalive_timeout 0;        # zero value disables keep-alive client connections
+    client_max_body_size 0;     # disables checking of client request body size.
+
+    send_timeout 60s;           # timeout between two successive write operations
+    client_body_timeout 60s;    # a period between two successive read operations
 
     location ~ ^\/static\/.*$ {
         root $directory/app/;
@@ -60,7 +65,7 @@ gunicorn_conf="
 bind = '127.0.0.1:$port'
 workers = 4
 worker_class = 'gevent'
-timeout = 60
+timeout = 60  # worker silent time
 keep_alive = 75
 "
 gunicorn_file="$directory/gunicorn.py"
@@ -68,6 +73,8 @@ gunicorn_file="$directory/gunicorn.py"
 echo "$gunicorn_conf" | sudo tee $gunicorn_file
 
 # supervisor
+# don't forget to add blow line to /etc/supervisor/supervisor.conf under [supervisord]
+# environment=LANG=en_CA.UTF-8,LC_ALL=en_CA.UTF-8,LC_LANG=en_CA.UTF-8
 supervisor_file="/etc/supervisor/conf.d/$project.conf"
 supervisor_conf="
 [program:$project]
