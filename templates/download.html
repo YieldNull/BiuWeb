@@ -45,7 +45,7 @@
         $.getJSON("{{ url_for('file_list') }}", function (result) {
             if (result.length != 0) {
                 $.each(result, function (i, file) {
-                    $("#files").append("<p><a href='" + file.url + "'>" + file.name + "</a></p>");
+                    $("#files").append("<p><a href='" + file.uri + "'>" + file.name + "</a></p>");
                 });
             }
             setTimeout(get_file_list, 100);
