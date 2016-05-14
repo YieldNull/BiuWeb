@@ -1,15 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Upload new File</title>
+    <title>upload.html</title>
+    <meta name="content-type" content="text/html; charset=UTF-8">
 
-</head>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/basic.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/dropzone.css') }}">
+
+    <script src="{{ url_for('static',filename='js/dropzone.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/dropzone-amd-module.js') }}"></script>
+
+    <style type="text/css">
+        body {
+            background: url({{url_for('static' ,filename= 'img/bg.jpg')}})
+        }
+
+        @font-face {
+            font-family: Roboto;
+            font-weight: 300;
+        }
+
+        .dropzone {
+            width: 700px;
+            height: 350px;
+            margin: auto;
+            font-family: Roboto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            filter: alpha(opacity=50);
+            -moz-opacity: 0.5;
+            opacity: 0.5;
+            overflow-x: auto;
+        }
+    </style>
 <body>
-<h1>Upload new File</h1>
-<form action="" method="POST" enctype="multipart/form-data">
-    <p><input type="file" name="file" multiple/>
-        <input type="submit" value="Upload"/>
-</form>
+
+<div id="dropzone">
+    <form action="{{ url_for('upload') }}" class="dropzone needsclick dz-clickable" id="demo-upload">
+
+        <div class="dz-message needsclick">
+            <br><br>
+            Drop files here or click to upload.<br>
+        </div>
+    </form>
+</div>
 </body>
 </html>

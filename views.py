@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 import datetime
 import functools
 import hashlib
@@ -134,8 +135,6 @@ def index():
     else:
         uid = session['uid']
 
-    print(uid)
-
     # 更改状态
     query = User.select().where(User.uid == uid)
     if query.count() == 0:
@@ -195,7 +194,7 @@ def upload():
 
         uid = session['uid']
         store_files(uid, files)
-        return redirect(url_for('upload'))  # TODO 界面，或者用AJAX上传
+        return '200 OK'  # redirect(url_for('upload'))  # TODO 界面，或者用AJAX上传
     else:
         return render_template('upload.html')
 
@@ -352,7 +351,7 @@ def get_file_list(uid, android=False):
         file_list.append({
             'uid': file.uid.uid,  # 你大爷的，没叫你自动关联啊
             'name': file.name,
-            'url': url,
+            'uri': url,
             'size': get_file_size(uid, file.name)})
 
         # TODO 这里有一个问题啊，当用户在浏览器下载文件后，又刷新页面，结果就给刷没了。。。。
@@ -374,6 +373,7 @@ def store_files(uid, files):
         sha1 = hashlib.sha1()
         sha1.update((uid + file.filename + str(datetime.datetime.now())).encode('utf-8'))
 
+        # TODO 重命名 files中的相同文件名，不然就覆盖了
         File.create(uid=uid, name=file.filename,
                     hashcode=sha1.hexdigest(), used=False,
                     timestamp=datetime.datetime.now())

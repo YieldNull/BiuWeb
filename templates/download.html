@@ -4,12 +4,41 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-1.11.0.min.js') }}"></script>
+
+    <style type="text/css">
+        body {
+            background: url({{url_for('static' ,filename= 'img/bg.jpg')}})
+        }
+
+        .login_box {
+            width: 350px;
+            height: 400px;
+            margin: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            filter: alpha(opacity=50);
+            -moz-opacity: 0.5;
+            opacity: 0.5;
+        }
+
+    </style>
+
 </head>
 <body>
 
-<div id="discrip"><h3>正在等待手机端上传文件</h3></div>
+<div class="emptyBox">
 
-<div id="files"></div>
+</div>
+
+<div class="login_box" style="background:#FFF">
+    <br>
+    <div style="text-align: center;">
+        <div id="files"></div>
+    </div>
+</div>
 
 <script>
     function get_file_list() {
