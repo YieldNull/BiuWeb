@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Biu文件传输</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/base.css') }}"/>
+
+    {% block css %}
+    {% endblock %}
+<body>
+
+<div class="move" style="position:absolute;top: 3%;right: 2%;">
+    <h1>帮助</h1>
+</div>
+
+<div id="particles">
+    {% block body %}
+    {% endblock %}
+</div>
+
+
+<script type='text/javascript' src='{{ url_for('static',filename='js/jquery-1.11.1.min.js') }}'></script>
+<script type='text/javascript' src='{{ url_for('static',filename='js/jquery.particleground.min.js') }}'></script>
+
+<script>
+    $(document).ready(function () {
+        $('#particles').particleground({
+            dotColor: '#5cbdaa',
+            lineColor: '#5cbdaa'
+        });
+        $('.intro').css({
+            'margin-top': -($('.intro').height() / 2)
+        });
+    });
+</script>
+
+{% block js %}
+{% endblock %}
+
+</body>
+</html>

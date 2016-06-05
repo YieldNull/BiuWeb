@@ -10,7 +10,6 @@ if getpass.getuser() == 'finalize':  # local  environment
 else:
     UPLOAD_FOLDER = '/srv/www/biu/files'  # in remote server
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'zip', 'rar', 'rmvb'}
 SECRET_KEY = '6+WyIHq+lAFE8FzT4kGYl3xM+Qia1+yYy3K0wRfMblE='
 
 DATABASE = {

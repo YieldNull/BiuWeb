@@ -1,59 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-1.11.0.min.js') }}"></script>
+{% extends 'base.html' %}
 
-    <style type="text/css">
-        body {
-            background: url({{url_for('static' ,filename= 'img/bg.jpg')}})
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/download.css') }}"/>
+    <style type="text/css" rel="stylesheet">
+        .content img {
+            width: 30px;
+            height: 30px;
         }
-
-        .login_box {
-            width: 350px;
-            height: 400px;
-            margin: auto;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            filter: alpha(opacity=50);
-            -moz-opacity: 0.5;
-            opacity: 0.5;
-        }
-
     </style>
+{% endblock %}
 
-</head>
-<body>
-
-<div class="emptyBox">
-
-</div>
-
-<div class="login_box" style="background:#FFF">
-    <br>
-    <div style="text-align: center;">
-        <div id="files"></div>
+{% block body %}
+    <div class="content">
+        <table cellspacing="0" id="files">
+            <tr>
+                <th></th>
+                <th>文件名</th>
+                <th>点击下载</th>
+            </tr>
+        </table>
     </div>
-</div>
+{% endblock %}
 
-<script>
-    function get_file_list() {
-        $.getJSON("{{ url_for('file_list') }}", function (result) {
-            if (result.length != 0) {
-                $.each(result, function (i, file) {
-                    $("#files").append("<p><a href='" + file.uri + "'>" + file.name + "</a></p>");
-                });
-            }
-            setTimeout(get_file_list, 100);
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            /* For zebra striping */
+            $("table tr:nth-child(odd)").addClass("odd-row");
+            /* For cell text alignment */
+            $("table td:first-child, table th:first-child").addClass("first");
+            /* For removing the last border */
+            $("table td:last-child, table th:last-child").addClass("last");
         });
-    }
 
-    $(document).ready(get_file_list);
+    </script>
 
-</script>
-</body>
-</html>
+    <script>
+        function get_file_list() {
+            $.getJSON("{{ url_for('file_list') }}", function (result) {
+                if (result.length != 0) {
+
+                    $.each(result, function (i, file) {
+
+                        $("#files").append("\
+                            <tr> \
+                                <td><img src=\"/icon/" + file.name + "\"></td> \
+                                <td>" + file.name + "</td> \
+                                <td><a href=\"" + file.uri + "\">下载</a></td> \
+                            </tr>"
+                        );
+                    });
+                }
+                setTimeout(get_file_list, 100);
+            });
+        }
+
+        $(document).ready(get_file_list);
+
+    </script>
+
+{% endblock %}

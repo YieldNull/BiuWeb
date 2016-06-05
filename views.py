@@ -11,6 +11,7 @@ from time import sleep
 
 import qrcode
 import uuid
+import mimetypes
 
 from flask import request, render_template, make_response, session, url_for, redirect
 
@@ -311,6 +312,20 @@ def android_file_list():
             sleep(POLLING_INTERVAL)
         else:
             return files_json
+
+
+@app.route('/icon/<name>')
+def file_icon(name):
+    if not mimetypes.inited:
+        mimetypes.init()
+
+    mime, encoding = mimetypes.guess_type(name)
+    filename = 'icon/{:s}.svg'.format(mime.replace('/', '-'))
+
+    if os.path.exists('static/' + filename):
+        return redirect(url_for('static', filename=filename))
+    else:
+        return redirect(url_for('static', filename='file.svg'))
 
 
 # 以下方法Android 与浏览器共用，区别在于二者获取uid的方式不同

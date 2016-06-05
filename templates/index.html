@@ -1,24 +1,7 @@
-<!DOCTYPE html>
-<html>
+{% extends 'base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>比鼬-文件多终端快传</title>
-    <meta name="keywords" content="比鼬，文件快传">
-    <meta name="description" content="比鼬-文件多终端快传">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-    <link rel="shortcut icon" href="{{ url_for('static',filename='img/icon.png') }}">
-
-    <script type="text/javascript" src="{{ url_for('static',filename='js/jquery-1.11.0.min.js') }}"></script>
-
+{% block css %}
     <style type="text/css">
-        body {
-            background-image: url({{url_for('static',filename='img/bg.jpg')}});
-            background-position: center 0;
-            background-repeat: no-repeat;
-        }
-
         .login_box {
             width: 350px;
             height: 400px;
@@ -28,9 +11,9 @@
             left: 0;
             bottom: 0;
             right: 0;
-            filter: alpha(opacity=50);
-            -moz-opacity: 0.5;
-            opacity: 0.5;
+            filter: alpha(opacity=80);
+            -moz-opacity: 0.8;
+            opacity: 0.8;
         }
 
         #QrCodeImg {
@@ -38,23 +21,28 @@
             position: relative;
             margin: auto;
         }
+
+        .move > h1:hover {
+            color: #FFF;
+        }
+
     </style>
+{% endblock %}
 
-</head>
+{% block body %}
+    <div class="login_box" style="background:#FFF">
+        <img id="QrCodeImg" style="padding-left:20px;padding-right:20px;padding-top:30px;"
+             src="{{ url_for('gen_qrcode') }}"/>
+    </div>
+    <div class=" intro">
+        <p style="color: #616161;font-size: large">请扫描二维码传输文件</p>
+    </div>
+{% endblock %}
 
-<body>
-<div class="emptyBox">
-
-</div>
-<div class="login_box" style="background:#FFF">
-    <img id="QrCodeImg" style="max-width: 320px;max-height: 320px;margin-top: 20px" src="{{ url_for('gen_qrcode') }}">
-    <p class="sub_title" style="text-align:center">请扫描二维码传输文件</p>
-</div>
-
-<script>
-    $(document).ready(function () {
-        $.getScript("{{ url_for('login') }}");
-    })
-</script>
-</body>
-</html>
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $.getScript("{{ url_for('login') }}");
+        })
+    </script>
+{% endblock %}
