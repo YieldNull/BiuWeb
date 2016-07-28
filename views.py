@@ -9,6 +9,7 @@ import os
 import io
 from time import sleep
 
+import re
 import qrcode
 import uuid
 import mimetypes
@@ -383,15 +384,42 @@ def store_files(uid, files):
     :return:
     """
     for file in files:
-        file.save(get_file_path(uid, file.filename))
+        name = file.filename
+
+        name = re.sub("[\\\/|:?*<>+\[\]\"']", '_', name)  # 将文件名中的这些字符替换掉
+
+        if os.path.exists(get_file_path(uid, name)):
+            name = version_filename(uid, name)  # 重命名 files中的相同文件名，不然就覆盖了
+
+        file.save(get_file_path(uid, name))
 
         sha1 = hashlib.sha1()
-        sha1.update((uid + file.filename + str(datetime.datetime.now())).encode('utf-8'))
+        sha1.update((uid + name + str(datetime.datetime.now())).encode('utf-8'))
 
-        # TODO 重命名 files中的相同文件名，不然就覆盖了
-        File.create(uid=uid, name=file.filename,
+        File.create(uid=uid, name=name,
                     hashcode=sha1.hexdigest(), used=False,
                     timestamp=datetime.datetime.now())
+
+
+def version_filename(uid, name):
+    """
+    重命名已存在的文件，在后面加版本号 "(\d)"
+    :param uid:
+    :param name:
+    :return:
+    """
+    pos = name.find('.')
+    pos = pos if pos > 0 else len(name)
+
+    version = 1
+    name = name[:pos] + '({:d})'.format(version) + name[pos:]
+    vname = list(name)
+
+    while os.path.exists(get_file_path(uid, "".join(vname))):
+        version += 1
+        vname[pos + 1] = str(version)
+
+    return "".join(vname)
 
 
 def down_file(uid, hashcode):
