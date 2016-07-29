@@ -14,8 +14,9 @@ import qrcode
 import uuid
 import mimetypes
 
-from flask import request, render_template, make_response, session, url_for, redirect
+import urllib.parse
 
+from flask import request, render_template, make_response, session, url_for, redirect
 from app import *
 from models import *
 
@@ -384,9 +385,9 @@ def store_files(uid, files):
     :return:
     """
     for file in files:
-        name = file.filename
+        name = urllib.parse.unquote(file.filename)
 
-        name = re.sub("[\\\/|:?*<>+\[\]\"']", '_', name)  # 将文件名中的这些字符替换掉
+        name = re.sub('[\\\/|:?*<>+"]', '_', name)  # 将文件名中的这些字符替换掉
 
         if os.path.exists(get_file_path(uid, name)):
             name = version_filename(uid, name)  # 重命名 files中的相同文件名，不然就覆盖了
