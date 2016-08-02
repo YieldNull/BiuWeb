@@ -322,12 +322,14 @@ def file_icon(name):
         mimetypes.init()
 
     mime, encoding = mimetypes.guess_type(name)
-    filename = 'icon/{:s}.svg'.format(mime.replace('/', '-'))
+    mime = mime.replace('/', '-') if mime is not None else 'text'
+
+    filename = 'icon/{:s}.svg'.format(mime)
 
     if os.path.exists('static/' + filename):
         return redirect(url_for('static', filename=filename))
     else:
-        return redirect(url_for('static', filename='file.svg'))
+        return redirect(url_for('static', filename='icon/text.svg'))
 
 
 # 以下方法Android 与浏览器共用，区别在于二者获取uid的方式不同
