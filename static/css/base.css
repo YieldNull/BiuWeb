@@ -13,7 +13,7 @@ dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
 article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
+figure, figcaption, footer, header,
 menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
     margin: 0;
@@ -25,7 +25,7 @@ time, mark, audio, video {
 }
 
 article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
+footer, header, menu, nav, section {
     display: block;
 }
 
@@ -74,18 +74,21 @@ body {
 }
 
 #particles {
-    width: 100%;
-    height: 100%;
     overflow: hidden;
 }
 
 .intro {
     position: absolute;
     left: 0;
-    top: 70%;
+    bottom: 0;
     padding: 0 20px;
     width: 100%;
     text-align: center;
+}
+
+.intro p {
+    color: #616161;
+    font-size: large;
 }
 
 h1 {
@@ -107,8 +110,64 @@ h1::after {
 }
 
 p {
-    margin: 0 0 30px 0;
+    margin: 0 0 10px 0;
     font-size: 24px;
+}
+
+.container {
+    height: 100%;
+    min-width: 400px;
+    min-height: 700px;
+    overflow: auto;
+    display: block;
+    position: relative;
+}
+
+.login_box {
+    width: 350px;
+    height: 400px;
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    margin-top: -200px;
+    margin-left: -175px;
+    filter: alpha(opacity=80);
+    -moz-opacity: 0.8;
+    opacity: 0.8;
+    box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+    background: #FFF;
+}
+
+.panel {
+    box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#QrCodeImg {
+    display: block;
+    position: relative;
+    margin: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 30px;
+}
+
+.move > h1:hover {
+    color: #FFF;
+}
+
+.footer {
+    position: absolute;
+    right: 0;
+    bottom: 10px;
+    left: 0;
+    text-align: center;
+    color: white;
+}
+
+.footer a {
+    color: white;
+    font-size: 16px
 }
 
 @media only screen and (max-width: 1000px) {

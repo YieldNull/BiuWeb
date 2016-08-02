@@ -3,56 +3,13 @@
 {% block css %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/dropzone.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/upload.css') }}">
-
-    <style type="text/css">
-
-
-        @font-face {
-            font-family: Roboto;
-            font-weight: 300;
-        }
-
-        .move > h1:hover {
-            color: #FFF;
-        }
-
-        .dropzone {
-            width: 660px;
-            height: 350px;
-            margin: auto;
-            font-family: 'Montserrat', sans-serif;
-            position: absolute;
-
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            filter: alpha(opacity=80);
-            -moz-opacity: 0.8;
-            opacity: 0.8;
-            overflow-x: auto;
-
-            font: 12px/15px "Helvetica Neue", Arial, Helvetica, sans-serif;
-            border: 1px solid #d3d3d3;
-            -moz-border-radius: 5px; /* FF1+ */
-            -webkit-border-radius: 5px; /* Saf3-4 */
-            border-radius: 5px;
-
-        }
-
-
-    </style>
 {% endblock %}
 
 {% block body %}
     <div id="dropzone">
-        <form action="{{ url_for('upload') }}" class="dropzone needsclick dz-clickable" id="demo-upload">
-
+        <form action="{{ url_for('upload') }}" class="dropzone panel needsclick dz-clickable" id="demo-upload">
             <div class="dz-message needsclick">
-
-                <br><br><br>
-                <span style="font-size:25px;color:#16a085"> 点击或拖拽上传</span>
-                <br>
+                <span class="upload-hint"> 点击或拖拽上传</span>
             </div>
 
         </form>

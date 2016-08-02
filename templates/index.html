@@ -1,69 +1,35 @@
 {% extends 'base.html' %}
 
-{% block css %}
-    <style type="text/css">
-        .login_box {
-            width: 350px;
-            height: 400px;
-            margin: auto;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            filter: alpha(opacity=80);
-            -moz-opacity: 0.8;
-            opacity: 0.8;
-        }
+{% block body %}
+    <a href="https://github.com/YieldNull/Biu">
+        <img style="position: absolute; top: 0; right: 0; border: 0;"
+             src="{{ url_for('static',filename='img/github.png') }}"
+             alt="Fork me on GitHub"
+             data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png">
+    </a>
+    <div class="login">
+        <div class="login_box panel">
+            <div>
+                <img id="QrCodeImg" src="{{ url_for('gen_qrcode') }}"/>
+            </div>
 
-        #QrCodeImg {
-            display: block;
-            position: relative;
-            margin: auto;
-        }
-
-        .move > h1:hover {
-            color: #FFF;
-        }
-
-    </style>
-
-    <style type="text/css">
-        .footer {
-            position: absolute;
-            right: 0;
-            bottom: 10px;
-            left: 0;
-            text-align: center;
-            color: white;
-        }
-
-        .footer a {
-            color: white;
-            font-size: 16px
-        }
-    </style>
-
+            <div class="intro">
+                <p>请扫描二维码传输文件</p>
+            </div>
+        </div>
+    </div>
 {% endblock %}
+
 
 
 {% block footer %}
-    <div class="footer">
-        <p>
-            <a href="http://www.cnsoftbei.com/bencandy.php?fid=130&aid=1379" target="_blank">第五届"中国软件杯"大学生软件设计大赛</a> --
-            <a href="https://github.com/YieldNull/Biu/releases/download/0.1.1/biu.apk" target="_blank">参赛作品</a>
-        </p>
-    </div>
-{% endblock %}
+    <p>
+        <a href="http://www.cnsoftbei.com/bencandy.php?fid=130&aid=1379" target="_blank">第五届"中国软件杯"大学生软件设计大赛</a> --
+        <a href="https://github.com/YieldNull/Biu/releases/download/0.1.1/biu.apk" target="_blank">参赛作品</a>
+    </p>
 
-{% block body %}
-    <div class="login_box" style="background:#FFF">
-        <img id="QrCodeImg" style="padding-left:20px;padding-right:20px;padding-top:30px;"
-             src="{{ url_for('gen_qrcode') }}"/>
-    </div>
-    <div class=" intro">
-        <p style="color: #616161;font-size: large">请扫描二维码传输文件</p>
-    </div>
+    <p><a href="http://www.miitbeian.gov.cn/" target="_blank" style="text-decoration: none">鄂ICP备16003391号</a></p>
+
 {% endblock %}
 
 {% block js %}

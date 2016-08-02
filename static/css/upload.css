@@ -14,7 +14,7 @@
     position: relative;
     display: inline-block;
     width: 120px;
-    margin: 0.5em;
+    margin: 5px;
 }
 
 .dropzone .dz-preview .dz-progress {
@@ -46,10 +46,55 @@
 .dropzone .dz-preview .dz-error-mark, .dropzone .dz-preview .dz-success-mark {
     position: absolute;
     display: none;
-    left: 30px;
     top: 30px;
     width: 54px;
     height: 58px;
     left: 50%;
     margin-left: -27px;
+}
+
+@font-face {
+    font-family: Roboto;
+    font-weight: 300;
+}
+
+.move > h1:hover {
+    color: #FFF;
+}
+
+.dropzone {
+    width: 840px;
+    height: 400px;
+
+    margin: auto;
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    filter: alpha(opacity=80);
+    -moz-opacity: 0.8;
+    opacity: 0.8;
+    overflow-x: auto;
+
+    font: 12px/15px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    border: 1px solid #d3d3d3;
+}
+
+.upload-hint {
+    font-size: 25px;
+    color: #16a085;
+
+    height: 10px;
+    text-align: center;
+    position: relative;
+    top: 50%;
+
+    margin-top: -10px;
+}
+
+.dz-message {
+    height: 100%;
+    width: 100%;
 }
