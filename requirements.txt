@@ -1,6 +1,6 @@
 flask
 qrcode
-Pillow
+Pillow  # sudo apt-get install libjpeg-dev
 peewee
 requests
 PyMySQL
