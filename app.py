@@ -5,8 +5,8 @@ from flask import Flask
 from playhouse.flask_utils import FlaskDB
 import getpass
 
-if getpass.getuser() == 'finalize':  # local  environment
-    UPLOAD_FOLDER = '/home/finalize/Workspace/pycharm/biu/files'
+if getpass.getuser() == 'yieldnull':  # local  environment
+    UPLOAD_FOLDER = '/home/yieldnull/Workspace/pycharm/biu/files'
 else:
     UPLOAD_FOLDER = '/srv/www/biu/files'  # in remote server
 
