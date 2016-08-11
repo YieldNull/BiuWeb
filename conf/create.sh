@@ -5,15 +5,18 @@
 
 # Author: YieldNull
 # Updated On: 2016/02/25
+# Update  On: 2016/07/26, add python version support
 
-if [ ! $# = 3 ] ; then
-    echo "Args: project_name port domain_name"
+if [ ! $# = 4 ] ; then
+    echo "Args: project_name port domain_name python-version"
+    echo "Example: blog 9000 domain.com 2"
     exit
 fi
 
 project=$1  # project name
 port=$2  # project port
 domain=$3  # domain name
+pyversion=$4 # python version
 
 # program directory
 directory="/srv/www/$1"
@@ -25,7 +28,7 @@ sudo mkdir -p $directory/files
 nginx_file="/etc/nginx/sites-available/$project"
 nginx_conf="server {
     listen      80;
-    server_name $3;
+    server_name $domain;
 
     root  $directory/app;
     access_log $directory/log/access_log;
@@ -33,7 +36,6 @@ nginx_conf="server {
 
 
     gzip on;
-    keepalive_timeout 0;        # zero value disables keep-alive client connections
     client_max_body_size 0;     # disables checking of client request body size.
 
     send_timeout 60s;           # timeout between two successive write operations
@@ -91,11 +93,18 @@ stdout_logfile          = $directory/log/supervisor.log"
 echo "$supervisor_conf" | sudo tee $supervisor_file
 
 # virtualenv
-sudo virtualenv $directory/venv
+sudo virtualenv -p /usr/bin/python$pyversion $directory/venv
 sudo chmod -R 777 $directory/venv
 source $directory/venv/bin/activate
-pip3 install gunicorn gevent
+pip install gunicorn gevent
 deactivate
+
+# pipconf
+pipconf="/home/$USER/.pip/pip.conf"
+if [ -e "$pipconf" ] ; then
+    sudo cp $pipconf $directory/venv/
+fi
+
 sudo chmod -R 755 $directory/venv
 sudo chown -R $USER:$USER $directory
 sudo chown -R git:git $directory/app
@@ -111,7 +120,7 @@ if [ "'"$refname"'" = "\"refs/heads/master\"" ] ; then
     # if master branch is pushed
     GIT_WORK_TREE=$directory/app git checkout -f
     source $directory/venv/bin/activate
-    pip3 install -r $directory/app/requirements.txt
+    pip install -r $directory/app/requirements.txt
     deactivate
     supervisorctl reload $project
 fi
@@ -129,4 +138,3 @@ sudo chown -R git:git $directory/app
 
 sudo service nginx restart
 sudo supervisorctl reload
-
