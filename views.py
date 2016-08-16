@@ -132,11 +132,10 @@ def index():
     将数据库中uid对应的User状态改为offline
     :return:
     """
-    if session.get('uid') is None:
-        uid = str(uuid.uuid1())
-        session['uid'] = uid
-    else:
-        uid = session['uid']
+
+    # 回首页就强制刷新uid,原因见 get_file_list
+    uid = str(uuid.uuid1())
+    session['uid'] = uid
 
     # 更改状态
     query = User.select().where(User.uid == uid)
@@ -197,7 +196,7 @@ def upload():
 
         uid = session['uid']
         store_files(uid, files)
-        return '200 OK'  # redirect(url_for('upload'))  # TODO 界面，或者用AJAX上传
+        return '200 OK'
     else:
         return render_template('upload.html')
 
@@ -226,19 +225,12 @@ def file(hashcode):
 @app.route('/filelist')
 @login_required
 def file_list():
+    """
+    浏览器获取从安卓上传来的文件清单
+    :return:
+    """
     uid = session['uid']
-    retry_count = 0
-
-    while True:
-        if retry_count == RETRY_THRESHOLD:
-            return json.dumps([])
-
-        files_json = get_file_list(uid)
-        if len(json.loads(files_json)) == 0:
-            retry_count += 1
-            sleep(POLLING_INTERVAL)
-        else:
-            return files_json
+    return get_file_list(uid)
 
 
 @app.route('/bind')
@@ -302,22 +294,16 @@ def android_file_list():
     :return:
     """
     uid = request.args.get('uid')
-    retry_count = 0
-
-    while True:
-        if retry_count == RETRY_THRESHOLD:
-            return json.dumps([])
-
-        files_json = get_file_list(uid, android=True)
-        if len(json.loads(files_json)) == 0:
-            retry_count += 1
-            sleep(POLLING_INTERVAL)
-        else:
-            return files_json
+    return get_file_list(uid, True)
 
 
 @app.route('/icon/<name>')
 def file_icon(name):
+    """
+    显示浏览器可下载列表时，文件ICON
+    :param name:
+    :return:
+    """
     if not mimetypes.inited:
         mimetypes.init()
 
@@ -356,27 +342,52 @@ def get_file_size(uid, filename):
 
 def get_file_list(uid, android=False):
     """
-    获取可下载的文件列表
+    获取可下载的文件列表。
+
+    这里有一个问题，设有两次浏览器下载操作。前者记为D1，后则记为D2。
+    当D1完后，再次返回主页进行D2的扫码连接，此时D1应该还有一个请求在polling，
+    再次返回主页时，这个polling并不会结束。
+    当安卓端再次上传文件后，这个请求会优先获取到上传的文件清单,并返回给早已退出的网页。（used is True）
+    因此，在D2跳转到下载页面，并尝试获取文件清单时，会缺失被D1最后一个polling返回的文件
+
+    最简单粗暴的方式，就是每次访问主页，都生成一个全新的uid。
+    那么D2上传的文件对应的uid与D1最后一个polling所要检测的uid并不相同
+    该polling最终会因超时而结束,新上传的文件清单也不会缺失
+
     :param android:
     :param uid:
     :return:
     """
-    query = File.select().where(File.uid == uid, File.used == False)
+    retry_count = 0
 
-    file_list = []
-    for file in query:
-        url = url_for('file', hashcode=file.hashcode) if not android else url_for('android_file',
-                                                                                  hashcode=file.hashcode)
-        file_list.append({
-            'uid': file.uid.uid,  # 你大爷的，没叫你自动关联啊
-            'name': file.name,
-            'uri': url,
-            'size': get_file_size(uid, file.name)})
+    while True:
+        if retry_count == RETRY_THRESHOLD:
+            return json.dumps([])
 
-        # TODO 这里有一个问题啊，当用户在浏览器下载文件后，又刷新页面，结果就给刷没了。。。。
-        File.update(used=True).where(File.uid == uid, File.hashcode == file.hashcode).execute()  # 更改状态
+        query = File.select().where(File.uid == uid, File.used == False)
 
-    return json.dumps(file_list)
+        if query.count() == 0:
+            retry_count += 1
+            sleep(POLLING_INTERVAL)
+        else:
+            file_list = []
+            for file in query:
+                url = url_for('file', hashcode=file.hashcode) if not android \
+                    else url_for('android_file', hashcode=file.hashcode)
+
+                file_list.append({
+                    'uid': file.uid.uid,  # 你大爷的，没叫你自动关联啊
+                    'name': file.name,
+                    'uri': url,
+                    'size': get_file_size(uid, file.name)})
+
+                # TODO 这里有一个问题啊，当用户在浏览器下载文件后，又刷新页面，结果就给刷没了。。。。
+
+                # 更改状态，表示文件信息已经被获取了，不然会重复地发送给客户端，我才不想在客户端做重复性验证呢
+                File.update(used=True).where(File.uid == uid, File.hashcode == file.hashcode).execute()
+
+            files_json = json.dumps(file_list)
+            return files_json
 
 
 def store_files(uid, files):
@@ -420,7 +431,8 @@ def version_filename(uid, name):
 
     while os.path.exists(get_file_path(uid, "".join(vname))):
         version += 1
-        vname[pos + 1] = str(version)
+        end = vname.index(')', pos)  # 版本号可能超过一位数
+        vname[pos + 1:end] = str(version)
 
     return "".join(vname)
 
